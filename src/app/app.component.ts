@@ -1,124 +1,80 @@
-import {Component,OnInit,ViewEncapsulation} from '@angular/core';
-import {TreeNode} from 'primeng/api';
-import {MessageService} from 'primeng/api';
+import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { FormControl } from '@angular/forms';
+import { TreeNode } from 'primeng/api';
+import { MessageService } from 'primeng/api';
+import { combineLatest, Observable } from 'rxjs';
+import { debounceTime, distinctUntilChanged, map, startWith, tap } from 'rxjs/operators';
+import { HttpService } from './http.service';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-    providers: [MessageService],
-    styleUrls: ['./app.component.scss']
+  providers: [MessageService],
+  styleUrls: ['./app.component.scss']
 })
-export class AppComponent { 
-    data1: TreeNode[];
+export class AppComponent {
+  data$: Observable<TreeNode[]>;
+  dataSearch$: Observable<TreeNode[]>;
+  data1: TreeNode[];
 
-    data2: TreeNode[];//gggg
+  selectedNode: TreeNode;
 
-    selectedNode: TreeNode;
+  searchInput: FormControl = new FormControl('');
+  searchInput$ :Observable<string> = this.searchInput.valueChanges.pipe(
+      startWith(''), // start it off
+      debounceTime(300), // debounce the user input
+      distinctUntilChanged()
+       )
 
-    constructor(private messageService: MessageService) {}
+       result$:Observable<TreeNode[]>
 
-    ngOnInit() {
-        this.data1 = [{
-            label: 'CEO',
-            type: 'person',
-            styleClass: 'p-person',
-            expanded: true,
-            data: {name:'Walter White', 'avatar': 'walter.jpg'},
-            children: [
-                {
-                    label: 'CFO',
-                    type: 'person',
-                    styleClass: 'p-person',
-                    expanded: true,
-                    data: {name:'Saul Goodman', 'avatar': 'saul.jpg'},
-                    children:[{
-                        label: 'Tax',
-                        styleClass: 'department-cfo'
-                    },
-                    {
-                        label: 'Legal',
-                        styleClass: 'department-cfo'
-                    }],
-                },
-                {
-                    label: 'COO',
-                    type: 'person',
-                    styleClass: 'p-person',
-                    expanded: true,
-                    data: {name:'Mike E.', 'avatar': 'mike.jpg'},
-                    children:[{
-                        label: 'Operations',
-                        styleClass: 'department-coo'
-                    }]
-                },
-                {
-                    label: 'CTO',
-                    type: 'person',
-                    styleClass: 'p-person',
-                    expanded: true,
-                    data: {name:'Jesse Pinkman', 'avatar': 'jesse.jpg'},
-                    children:[{
-                        label: 'Development',
-                        styleClass: 'department-cto',
-                        expanded: true,
-                        children:[{
-                            label: 'Analysis',
-                            styleClass: 'department-cto'
-                        },
-                        {
-                            label: 'Front End',
-                            styleClass: 'department-cto'
-                        },
-                        {
-                            label: 'Back End',
-                            styleClass: 'department-cto'
-                        }]
-                    },
-                    {
-                        label: 'QA',
-                        styleClass: 'department-cto'
-                    },
-                    {
-                        label: 'R&D',
-                        styleClass: 'department-cto'
-                    }]
-                }
-            ]
-        }];
+  constructor(
+    private messageService: MessageService,
+    private http: HttpService
+  ) {}
 
-        this.data2 = [{
-            label: 'F.C Barcelona',
-            expanded: true,
-            children: [
-                {
-                    label: 'F.C Barcelona',
-                    expanded: true,
-                    children: [
-                        {
-                            label: 'Chelsea FC'
-                        },
-                        {
-                            label: 'F.C. Barcelona'
-                        }
-                    ]
-                },
-                {
-                    label: 'Real Madrid',
-                    expanded: true,
-                    children: [
-                        {
-                            label: 'Bayern Munich'
-                        },
-                        {
-                            label: 'Real Madrid'
-                        }
-                    ]
-                }
-            ]
-        }];
-    }
+  ngOnInit() {
+    this.dataSearch$ = this.http.getData().pipe(
+      // map( (data):string[] =>
+      //   data.map(entity => entity.children.map(child => child.label)).flat()
+      // ),
+      tap(console.log)
+    );
 
-    onNodeSelect(event) {
-        this.messageService.add({severity: 'success', summary: 'Node Selected', detail: event.node.label});
-    }
+    this.result$ =combineLatest([this.searchInput$,this.dataSearch$]).pipe(
+    map(([search,data])=>{
+      if(search){
+
+     return   data[0].children.filter(single=>single.label.includes(search))
+      }
+      else{
+        return data
+      }
+     // data.map(entity => entity.children.map(child => child.label))
+    })
+
+    )
+
+
+
+
+    this.data$ = this.http.getData().pipe(tap(data => (this.data1 = data)));
+  }
+  // showData() {
+  //   this.http
+  //     .getData()
+  //     .pipe()
+  //     // clone the data object, using its known Config shape
+  //     .subscribe((data: IData) => {
+  //       this.data1 = { ...data };
+  //       console.log(this.data1);
+  //     });
+  // }
+  onNodeSelect(event) {
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Node Selected',
+      detail: event.node.label
+    });
+  }
 }

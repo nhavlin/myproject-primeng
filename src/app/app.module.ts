@@ -1,14 +1,14 @@
-import { NgModule }      from '@angular/core';
+import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import {FormsModule} from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
-import { AppComponent }   from './app.component';
+import { AppComponent } from './app.component';
 
-import {OrganizationChartModule} from 'primeng/organizationchart';
-import {ToastModule} from 'primeng/toast';
-import {PanelModule} from 'primeng/panel';
+import { OrganizationChartModule } from 'primeng/organizationchart';
+import { ToastModule } from 'primeng/toast';
+import { PanelModule } from 'primeng/panel';
 
 @NgModule({
   imports: [
@@ -18,10 +18,10 @@ import {PanelModule} from 'primeng/panel';
     ToastModule,
     PanelModule,
     HttpClientModule,
-    FormsModule
+    FormsModule,
+    ReactiveFormsModule
   ],
-  declarations: [ AppComponent ],
-  bootstrap:    [ AppComponent ]
+  declarations: [AppComponent],
+  bootstrap: [AppComponent]
 })
-
-export class AppModule { }
+export class AppModule {}
