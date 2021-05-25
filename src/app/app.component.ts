@@ -11,7 +11,7 @@ import {MessageService} from 'primeng/api';
 export class AppComponent { 
     data1: TreeNode[];
 
-    data2: TreeNode[];
+    data2: TreeNode[];//gggg
 
     selectedNode: TreeNode;
 
